@@ -11,8 +11,8 @@ canvas.height = SIZE * DPR;
 context.scale(DPR, DPR);
 context.lineWidth = 2;
 
-const UP = 'UP';
-const DOWN = 'DOWN';
+const UP = 1;
+const DOWN = 0;
 
 const LINE_SPACING = 8;
 const SEGMENT_SPACING = 2;
@@ -27,54 +27,51 @@ const LINES_PER_SET = (SIZE - (2* MARGIN)) / LINE_SPACING;
 // TODO: variable stroke width
 
 
-
-
-const getNextDirection = (direction) => direction == UP ? DOWN : UP;
 const getPlusMinus = () => Math.floor(Math.random() * 4.999 - 2);
 
-const startingLine = [];
-const y = MARGIN;
-for(x=MARGIN; x<=SIZE-MARGIN; x+=STEP){
-  startingLine.push({x, y});
+const getRootLine = (direction) => {
+  const startingLine = [];
+  const yStart = MARGIN;
+  const xStart = MARGIN;
+  for(x=xStart; x<=SIZE-MARGIN; x+=STEP){
+    const nextYModifier = (Math.random() * 20) + 10;
+    const nextXModifier = (Math.random() * 20) - 10;
+    const length = startingLine.length;
+    lastY = startingLine.length > 0 ? startingLine[length-1].y : yStart;
+    lastX = startingLine.length > 0 ? startingLine[length-1].x : xStart;
+    if(Math.floor(x/STEP) % 2 == direction){
+      startingLine.push({x: lastX + nextXModifier + STEP, y: lastY - nextYModifier})
+    } else {
+      startingLine.push({x: lastX + nextXModifier + STEP, y: lastY + nextYModifier})
+    }
+  }
+  return startingLine;
 }
 
-const allLines = [startingLine];
-for(i=0; i<LINES_PER_SET; i+= 1){
-  allLines.push(
-    startingLine.map((point) => ({x:point.x, y:point.y + i * LINE_SPACING}))
-  );
+const getLineSetFromRoot = (rootLine) => {
+  const allLines = [rootLine];
+  for(i=0; i<LINES_PER_SET; i+= 1){
+    allLines.push(
+      rootLine.map((point) => ({x:point.x, y:point.y + i * LINE_SPACING}))
+    );
+  }
+  return allLines;
 }
 
-allLines.map((line) => {
+const drawSingleLine = (line) => {
   line.reduce((last, next) => {
-    nextY = last.direction == UP ? next.y + 20 : next.y - 20;
-    lastY = last.direction == UP ? next.y - 20 : next.y + 20;
     context.moveTo(
       last.x + getPlusMinus(),
-      lastY + getPlusMinus()
+      last.y + getPlusMinus()
       );
     context.lineTo(
       next.x-SEGMENT_SPACING + getPlusMinus(),
-      nextY + getPlusMinus()
+      next.y + getPlusMinus()
       );
     context.stroke();
-    return {...next, direction: getNextDirection(last.direction)};
-  });
-});
+    return next;
+  })
+};
 
-allLines.map((line) => {
-  line.reduce((last, next) => {
-    nextY = last.direction == DOWN ? next.y + 20 : next.y - 20;
-    lastY = last.direction == DOWN ? next.y - 20 : next.y + 20;
-    context.moveTo(
-      last.x + getPlusMinus(),
-      lastY + getPlusMinus()
-      );
-    context.lineTo(
-      next.x-SEGMENT_SPACING + getPlusMinus(),
-      nextY + getPlusMinus()
-      );
-    context.stroke();
-    return {...next, direction: getNextDirection(last.direction)};
-  });
-});
+getLineSetFromRoot(getRootLine(UP)).map(drawSingleLine);
+getLineSetFromRoot(getRootLine(DOWN)).map(drawSingleLine);
