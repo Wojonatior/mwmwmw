@@ -10,12 +10,14 @@
   "repository": "wojonatior/mwmwmw",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack --watch",
+    "start": "webpack --watch --mode development",
     "build": "webpack --mode production",
     "prepublishOnly": "webpack --mode production"
   },
   "main": "dist/index.js",
-  "files": ["dist/*"],
+  "files": [
+    "dist/*"
+  ],
   "dependencies": {
     "react": "^16.8.6",
     "webpack": "^4.32.0"
